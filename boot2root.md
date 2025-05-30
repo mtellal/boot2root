@@ -84,8 +84,6 @@ lmezard:G!@M6f4Eatau{sF"
 The credentials are for the ftp account of `lmezard`. After accessing connecting to it we found 2 files:
 ```
 ftp> dir
-229 Entering Extended Passive Mode (|||26935|).
-150 Here comes the directory listing.
 -rwxr-x---    1 1001     1001           96 Oct 15  2015 README
 -rwxr-x---    1 1001     1001       808960 Oct 08  2015 fun
 
@@ -95,6 +93,94 @@ Complete this little challenge and use the result as password for user 'laurie' 
 $ file fun          
 fun: POSIX tar archive (GNU)
 ```
+### Laurie ssh creds (challenge pcap)
+
+The tar archive contains `750` files with the extension `.pcap`. These files are actually `ASCII text` files: `for f in *.pcap; do file $f ; done`:
+```
+...
+YDMXW.pcap: ASCII text
+YJR5Z.pcap: C source, ASCII text
+...
+```
+
+Each one of them contains a line in c code and a number identifying the file: 
+```
+$ cat YJR5Z.pcap       
+#include <stdio.h>
+
+//file1 
+```
+
+With a simple script we can gather the code into a simple c program, compile and execute it. It gives us a string to cipher with the `SHA256` algorithm to get the ssh's password of `laurie`:
+```
+$ gcc main.c
+$ ./a.out   
+MY PASSWORD IS: Iheartpwnage
+Now SHA-256 it and submit
+$ echo -n "Iheartpwnage" | sha256sum         
+330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4  -
+```
+
+We can now connect to the machine as `laurie` with the creds `laurie:330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4`
 
 
-`sha256('Iheartpwnage') = 330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4` 
+```
+--------  DEPHUSE 1  ----------
+
+Public speaking is very easy. -> directly defined in the condition
+
+--------  DEPHUSE 2  ----------
+
+1 2 6 24 120 720 -> t[i + 1] = (i + 1) * t[i] or break condition 0x08048b7e
+
+--------  DEPHUSE 3  ----------
+
+1 b 214 -> use hint indicate 'b' so take the first case (case 1 and local_8 = 214)
+
+--------  DEPHUSE 4  ----------
+
+9 
+
+-> make simple script 
+
+#include <stdio.h>
+
+int function4(int param) {
+        int v1;
+        int v2;
+        if (param < 2)
+                v2 = 1;
+        else {
+                v1 = function4(param - 1);
+                v2 = function4(param - 2);
+                v2 += v1;
+        }
+        return v2;
+}
+
+int main(void) {
+
+
+        for (int i = 0; i < 10; i++)
+                printf("i = %d  - v = %d \n", i, function4(i));
+        return 1;
+}
+
+
+--------  DEPHUSE 5  ----------
+
+o`ekma
+
+from this string 'isrveawhobpnutfg' the last 4 bytes of the char input are added to this char
+local_s = "isrveawhobpnutfg"
+local_s[input[0] & 0xf] = g
+local_s[input[1] & 0xf] = i
+....
+15 -> g -> o
+0 -> i -> ` 
+5 -> a -> e 01100101
+10 -> n -> k 01101011
+13 -> t -> m 01101101
+1 -> s -> a
+
+--------  DEPHUSE 6  ----------
