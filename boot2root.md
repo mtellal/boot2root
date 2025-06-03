@@ -123,25 +123,51 @@ $ echo -n "Iheartpwnage" | sha256sum
 
 We can now connect to the machine as `laurie` with the creds `laurie:330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4`
 
+In the laurie's session with found immediatly 2 files:
+- `bomb` a 32 binary 
+- `README` telling us to deffuse the `bomb` programm to get the ssh password of `thor`
 
 ```
+
+The 6 phases:
+Public speaking is very easy.
+1 2 6 24 120 720
+1 b 214
+9
+o`ekma
+4 2 6 3 1 5
+
+
+The 6 phases and the secret phase:
+Public speaking is very easy.
+1 2 6 24 120 720
+1 b 214
+9 austinpowers
+o`ekma
+4 2 6 3 1 5
+1001
+
+
 --------  DEPHUSE 1  ----------
 
-Public speaking is very easy. -> directly defined in the condition
+Public speaking is very easy. 
+-> Directly defined in the condition
 
 --------  DEPHUSE 2  ----------
 
-1 2 6 24 120 720 -> t[i + 1] = (i + 1) * t[i] or break condition 0x08048b7e
+1 2 6 24 120 720 
+-> t[i + 1] = (i + 1) * t[i] or break condition 0x08048b7e
 
 --------  DEPHUSE 3  ----------
 
-1 b 214 -> use hint indicate 'b' so take the first case (case 1 and local_8 = 214)
+1 b 214 
+- Use hint indicate 'b' so take the first case (case 1 and local_8 = 214)
 
 --------  DEPHUSE 4  ----------
 
 9 
 
--> make simple script 
+-> Simple script 
 
 #include <stdio.h>
 
@@ -159,8 +185,6 @@ int function4(int param) {
 }
 
 int main(void) {
-
-
         for (int i = 0; i < 10; i++)
                 printf("i = %d  - v = %d \n", i, function4(i));
         return 1;
@@ -184,3 +208,47 @@ local_s[input[1] & 0xf] = i
 1 -> s -> a
 
 --------  DEPHUSE 6  ----------
+
+=> 4 2 6 3 1 5
+Each number is different and inferior equals to 6 with the condition (5 < num - 1)
+For each value a node with a specific value is assigned (n6 for the value 6, ...)
+The last loop verify with the nodes are sorted 
+
+0x804b230 <node6>:      0x000001b0      0x00000006      0x0804b23c      0x000000d4
+0x804b240 <node5+4>:    0x00000005      0x0804b26c      0x000003e5      0x00000004
+0x804b250 <node4+8>:    0x0804b254      0x0000012d      0x00000003      0x0804b260
+0x804b260 <node2>:      0x000002d5      0x00000002      0x00000000      0x000000fd
+0x804b270 <node1+4>:    0x00000001      0x0804b248      0x000003e9      0x00000000
+
+node6 1b0
+node5 d4
+node4 3e5
+node3 12d
+node2 2d5
+node1 fd 
+
+3e5 2d5 1b0 12d fd d4
+4   2   6   3   1  5 
+```
+
+
+
+### LAURIE USER 
+
+```
+laurie@BornToSecHackMe:~$ ss -tulpn
+Netid  State      Recv-Q Send-Q                        Local Address:Port                          Peer Address:Port 
+udp    UNCONN     0      0                                         *:68                                       *:*     
+udp    UNCONN     0      0                                         *:68                                       *:*     
+tcp    LISTEN     0      100                                      :::993                                     :::*     
+tcp    LISTEN     0      100                                       *:993                                      *:*     
+tcp    LISTEN     0      128                               127.0.0.1:9000                                     *:*     
+tcp    LISTEN     0      50                                127.0.0.1:3306                                     *:*     
+tcp    LISTEN     0      100                                      :::143                                     :::*     
+tcp    LISTEN     0      100                                       *:143                                      *:*     
+tcp    LISTEN     0      128                                       *:80                                       *:*     
+tcp    LISTEN     0      32                                        *:21                                       *:*     
+tcp    LISTEN     0      128                                      :::22                                      :::*     
+tcp    LISTEN     0      128                                       *:22                                       *:*     
+tcp    LISTEN     0      128                                       *:443                                      *:*
+```
