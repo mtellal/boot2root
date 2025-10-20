@@ -414,6 +414,7 @@ bool main(int param_1,int param_2)
   return param_1 < 2;
 }
 ```  
+
 Our input is copied in a buffer of 140 bytes with `strcpy` making it vulnerable to buffer overflow because of the lack of size boundaries. We can overwrite the return address of the function of `main` like a `ret2libc` (system + exit + "/bin/sh").
 ```
 gdb exploit_me
