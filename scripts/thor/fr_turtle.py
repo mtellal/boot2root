@@ -1,6 +1,6 @@
 import turtle
 
-with open("turtle.txt", "r") as f:
+with open("turtle", "r") as f:
     for line in f:
         line = line.strip()
         if line.startswith("Avance"):

